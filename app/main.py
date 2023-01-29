@@ -1,9 +1,15 @@
-from fastapi import FastAPI, Response, status, HTTPException
+from fastapi import FastAPI, Response, status, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
+from . import models
+from .database import engine, get_db
+from sqlalchemy.orm import Session
+
+
+models.Base.metadata.create_all(bind=engine)
 
 
 app = FastAPI()
@@ -30,6 +36,16 @@ while True:
         print("Connection failed with error:")
         print(error)
         time.sleep(2)
+
+
+
+
+#TEST ORM
+@app.get('/sqlalchemy')
+async def test_posts(db: Session = Depends(get_db)):
+    return {'data': "Success"}
+
+
 
 
 #HOME PAGE

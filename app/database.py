@@ -6,6 +6,14 @@ SQLALCHEMY_DATABASE_URL = 'postgresql://postgres:Blue.Sky1@localhost/fastapi'
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL, echo=True, future=True)
 
-sessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
