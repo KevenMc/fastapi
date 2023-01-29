@@ -22,6 +22,7 @@ class Post(BaseModel):
     comment: Optional[int]
 
 
+#Set up database
 while True:
     try:
         conn = psycopg2.connect(host='localhost',
@@ -43,7 +44,8 @@ while True:
 #TEST ORM
 @app.get('/sqlalchemy')
 async def test_posts(db: Session = Depends(get_db)):
-    return {'data': "Success"}
+    posts = db.query(models.Post).all()
+    return {'data': posts}
 
 
 
@@ -56,22 +58,28 @@ async def root():
 
 #GET ALL POSTS
 @app.get('/posts')
-async def get_posts():
-    cursor.execute("""SELECT * FROM posts""")
-    posts = cursor.fetchall()
-    print(posts)
+async def get_posts(db: Session = Depends(get_db)):
+    # cursor.execute("""SELECT * FROM posts""")
+    # posts = cursor.fetchall()
+    posts = db.query(models.Post).all()
     return {'data': posts}
 
 
 #CREATE POST
 @app.post('/posts', status_code=status.HTTP_201_CREATED)
-async def create_post(post:Post):
-    cursor.execute("""INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING *""", 
-                       (post.title,
-                        post.content,
-                        post.published))
-    new_post = cursor.fetchone()
-    conn.commit()
+async def create_post(post:Post, db: Session = Depends(get_db)):
+    # cursor.execute("""INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING *""", 
+    #                    (post.title,
+    #                     post.content,
+    #                     post.published))
+    # new_post = cursor.fetchone()
+    # conn.commit()
+    new_post = models.Post(title=post.title,
+                content=post.content,
+                published=post.published)
+    db.add(new_post)
+    db.commit()
+    db.refresh(new_post)
     return {'data' : new_post}
 
 
