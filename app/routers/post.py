@@ -18,14 +18,14 @@ router = APIRouter(prefix='/posts',
              description="Creates a new post")
 async def create_post(post: schemas.PostCreate,
                       db: Session = Depends(get_db),
-                      user_id: int = Depends(oauth2.get_current_user)):
-    
-    new_post = models.Post(title=post.title,
-                           content=post.content,
-                           published=post.published)
+                      current_user: int = Depends(oauth2.get_current_user)):
+
+    new_post = models.Post(user_id=current_user.id,
+                           **post.dict())
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
+
     return new_post
 
 
@@ -40,6 +40,7 @@ def get_post(id: int,
     if post == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="This post does not exist, perhaps it has been deleted")
+
     return post
 
 
@@ -57,13 +58,18 @@ async def get_posts(db: Session = Depends(get_db)):
 async def create_post(id: int,
                       update_post: schemas.PostCreate,
                       db: Session = Depends(get_db),
-                      user_id: int = Depends(oauth2.get_current_user)):
+                      current_user: int = Depends(oauth2.get_current_user)):
 
     post_query = db.query(models.Post).filter(models.Post.id == id)
     post = post_query.first()
     if post == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="This post does not exist, perhaps it has been deleted")
+    
+    if post.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Oops, you can't do this")
+        
     post_query.update(update_post.dict(), synchronize_session=False)
     db.commit()
     return post_query.first()
@@ -74,14 +80,18 @@ async def create_post(id: int,
                status_code=status.HTTP_204_NO_CONTENT)
 async def delete_post(id: int,
                       db: Session = Depends(get_db),
-                      user_id: int = Depends(oauth2.get_current_user)):
+                      current_user: int = Depends(oauth2.get_current_user)):
 
     post_query = db.query(models.Post).filter(models.Post.id == id)
-
-    if post_query.first() == None:
+    post = post_query.first()
+    if  post == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="This post does not exist, perhaps it has been deleted")
-
+        
+    if post.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Oops, you can't do this")
+        
     post_query.delete(synchronize_session=False)
     db.commit()
     return
