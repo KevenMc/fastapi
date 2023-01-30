@@ -3,6 +3,7 @@ from .database import engine
 
 from . import models
 from .routers import post, user, auth
+from .config import setting
 
 
 models.Base.metadata.create_all(bind=engine)
@@ -21,7 +22,7 @@ app.include_router(auth.router)
 async def root():
     return {'message': 'Hello World'}
 
-#AUTH ROUTE
+# AUTH ROUTE
 # @app.get('/AUTH', tags=["AUTH"])
 # async def auth_route(user_id: int = Depends(oauth2.get_current_user)):
 #     pass
