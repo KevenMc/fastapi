@@ -3,27 +3,6 @@ from datetime import datetime
 from typing import Optional
 
 
-
-#####################################################################
-#POSTS
-class PostBase(BaseModel):
-    title: str
-    content: str
-    published: bool = True
-
-
-class PostCreate(PostBase):
-    pass
-
-
-class PostResponse(PostBase):
-    id: int
-    created_at: datetime
-    user_id: int
-    
-    class Config:
-        orm_mode=True
-
 #####################################################################
 #USERS
 class UserCreate(BaseModel):
@@ -46,10 +25,31 @@ class UserLogin(BaseModel):
     
     class Config:
         orm_mode = True
+        
+        
+#####################################################################
+# POSTS
+class PostBase(BaseModel):
+    title: str
+    content: str
+    published: bool = True
+    user: UserReturn
+
+
+class PostCreate(PostBase):
+    pass
+
+
+class PostResponse(PostBase):
+    id: int
+    created_at: datetime
+    user_id: int
+
+    class Config:
+        orm_mode = True
 
 #######################################################
 #TOKEN
-
 class Token(BaseModel):
     access_token: str
     token_type: str
