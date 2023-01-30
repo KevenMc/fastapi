@@ -31,12 +31,6 @@ while True:
         time.sleep(2)
 
 
-# TEST ORM
-@app.get('/sqlalchemy')
-async def test_posts(db: Session = Depends(get_db)):
-    posts = db.query(models.Post).all()
-    return {'data': posts}
-
 
 # HOME PAGE
 @app.get('/')
@@ -55,7 +49,7 @@ async def get_posts(db: Session = Depends(get_db)):
 
 # CREATE POST
 @app.post('/posts', status_code=status.HTTP_201_CREATED)
-async def create_post(post: schemas.Post, db: Session = Depends(get_db)):
+async def create_post(post: schemas.PostCreate, db: Session = Depends(get_db)):
     # cursor.execute("""INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING *""",
     #                    (post.title,
     #                     post.content,
@@ -86,7 +80,7 @@ def get_post(id: int, response: Response, db: Session = Depends(get_db)):
 
 # UPDATE POST BY ID
 @app.patch('/posts/{id}')
-async def create_post(id: int, update_post: schemas.Post, db: Session = Depends(get_db)):
+async def create_post(id: int, update_post: schemas.PostCreates, db: Session = Depends(get_db)):
     # cursor.execute("""UPDATE posts SET title = %s, content = %s, published = %s WHERE id = %s RETURNING *""",
     #                    (post.title,
     #                     post.content,
