@@ -1,6 +1,10 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from datetime import datetime
 
+
+
+#####################################################################
+#POSTS
 class PostBase(BaseModel):
     title: str
     content: str
@@ -17,3 +21,19 @@ class PostResponse(PostBase):
     
     class Config:
         orm_mode=True
+
+#####################################################################
+#USERS
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class UserReturn(BaseModel):
+    id: int
+    email: EmailStr
+    created_at: datetime
+    
+    class Config:
+        orm_mode = True
