@@ -5,11 +5,12 @@ from .. import models, schemas, utils
 from ..database import  get_db
 
 
-router = APIRouter(prefix='/users')
+router = APIRouter(prefix='/users',
+                   tags=["Users"])
 
 # CREATE USER
 @router.post('/', status_code=status.HTTP_201_CREATED,  response_model=schemas.UserReturn)
-async def create_post(user: schemas.UserCreate, db: Session = Depends(get_db)):
+async def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     if db.query(models.User).filter(models.User.email == user.email).first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="This Email address ishas an account. Have you forgotten your password?")

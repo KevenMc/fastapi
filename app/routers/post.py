@@ -6,11 +6,16 @@ from .. import models, schemas
 from ..database import engine, get_db
 
 
-router = APIRouter(prefix='/posts')
+router = APIRouter(prefix='/posts',
+                   tags=["Posts"],)
 
 
 # CREATE POST
-@router.post('/', status_code=status.HTTP_201_CREATED, response_model=schemas.PostResponse)
+@router.post('/',
+             status_code=status.HTTP_201_CREATED,
+             response_model=schemas.PostResponse,
+             summary="Create a Post",
+             description="Creates a new post")
 async def create_post(post: schemas.PostCreate, db: Session = Depends(get_db)):
     new_post = models.Post(title=post.title,
                            content=post.content,
