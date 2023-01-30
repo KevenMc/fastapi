@@ -26,8 +26,7 @@ while True:
         print("Connected to Postgres Database")
         break
     except Exception as error:
-        print("Connection failed with error:")
-        print(error)
+        print(f"Connection failed with error:\n ${error}")
         time.sleep(2)
 
 
@@ -36,8 +35,12 @@ app.include_router(user.router)
 app.include_router(auth.router)
 
 
-
 # HOME PAGE
 @app.get('/', tags=["Home"])
 async def root():
     return {'message': 'Hello World'}
+
+#AUTH ROUTE
+# @app.get('/AUTH', tags=["AUTH"])
+# async def auth_route(user_id: int = Depends(oauth2.get_current_user)):
+#     pass

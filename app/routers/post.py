@@ -2,7 +2,7 @@ from fastapi import Response, status, HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
 from typing import Optional, List
 
-from .. import models, schemas
+from .. import models, schemas, oauth2
 from ..database import engine, get_db
 
 
@@ -16,7 +16,10 @@ router = APIRouter(prefix='/posts',
              response_model=schemas.PostResponse,
              summary="Create a Post",
              description="Creates a new post")
-async def create_post(post: schemas.PostCreate, db: Session = Depends(get_db)):
+async def create_post(post: schemas.PostCreate,
+                      db: Session = Depends(get_db),
+                      user_id: int = Depends(oauth2.get_current_user)):
+    
     new_post = models.Post(title=post.title,
                            content=post.content,
                            published=post.published)
@@ -27,8 +30,12 @@ async def create_post(post: schemas.PostCreate, db: Session = Depends(get_db)):
 
 
 # READ POST BY ID
-@router.get('/{id}', response_model=schemas.PostResponse)
-def get_post(id: int, response: Response, db: Session = Depends(get_db)):
+@router.get('/{id}',
+            response_model=schemas.PostResponse)
+def get_post(id: int,
+             response: Response,
+             db: Session = Depends(get_db)):
+
     post = db.query(models.Post).filter(models.Post.id == id).first()
     if post == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -37,15 +44,21 @@ def get_post(id: int, response: Response, db: Session = Depends(get_db)):
 
 
 # GET ALL POSTS
-@router.get('/', response_model=List[schemas.PostResponse])
+@router.get('/',
+            response_model=List[schemas.PostResponse])
 async def get_posts(db: Session = Depends(get_db)):
     posts = db.query(models.Post).all()
     return posts
 
 
 # UPDATE POST BY ID
-@router.patch('/{id}', response_model=schemas.PostResponse)
-async def create_post(id: int, update_post: schemas.PostCreate, db: Session = Depends(get_db)):
+@router.patch('/{id}',
+              response_model=schemas.PostResponse)
+async def create_post(id: int,
+                      update_post: schemas.PostCreate,
+                      db: Session = Depends(get_db),
+                      user_id: int = Depends(oauth2.get_current_user)):
+
     post_query = db.query(models.Post).filter(models.Post.id == id)
     post = post_query.first()
     if post == None:
@@ -57,12 +70,18 @@ async def create_post(id: int, update_post: schemas.PostCreate, db: Session = De
 
 
 # DELETE POST
-@router.delete('/{id}', status_code=status.HTTP_204_NO_CONTENT)
-async def delete_post(id: int, db: Session = Depends(get_db)):
+@router.delete('/{id}',
+               status_code=status.HTTP_204_NO_CONTENT)
+async def delete_post(id: int,
+                      db: Session = Depends(get_db),
+                      user_id: int = Depends(oauth2.get_current_user)):
+
     post_query = db.query(models.Post).filter(models.Post.id == id)
+
     if post_query.first() == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="This post does not exist, perhaps it has been deleted")
+
     post_query.delete(synchronize_session=False)
     db.commit()
     return
