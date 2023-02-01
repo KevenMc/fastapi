@@ -55,6 +55,7 @@ async def get_posts(db: Session = Depends(get_db),
         .limit(limit)   \
         .offset(skip)   \
         .all()
+
     return posts
 
 
