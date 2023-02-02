@@ -74,7 +74,7 @@ async def get_posts(db: Session = Depends(get_db),
 # UPDATE POST BY ID
 @router.patch('/{id}',
               response_model=schemas.PostResponse)
-async def create_post(id: int,
+async def update_post(id: int,
                       update_post: schemas.PostCreate,
                       db: Session = Depends(get_db),
                       current_user: int = Depends(oauth2.get_current_user)):
