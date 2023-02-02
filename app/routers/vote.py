@@ -13,7 +13,7 @@ def checkPost(post_id: int,
 
     post = db.query(models.Post).filter(
         models.Post.id == post_id).first()
-    
+
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Post does not exist")
@@ -23,17 +23,19 @@ def checkPost(post_id: int,
 def vote(vote: schemas.Vote,
          db: Session = Depends(get_db),
          current_user: int = Depends(oauth2.get_current_user)) -> None:
-    
+
     checkPost(vote.post_id, db)
-    
+
     vote_query = db.query(models.Vote).filter(
-        models.Vote.post_id == vote.post_id, models.Vote.user_id == current_user.id)
+        models.Vote.post_id == vote.post_id,
+        models.Vote.user_id == current_user.id)
     found_vote = vote_query.first()
 
     if found_vote:
         vote_query.delete()
     else:
-        new_vote = models.Vote(post_id=vote.post_id, user_id=current_user.id)
+        new_vote = models.Vote(post_id=vote.post_id,
+                               user_id=current_user.id)
         db.add(new_vote)
     db.commit()
 
@@ -44,13 +46,15 @@ def vote(post_id: int,
          current_user: int = Depends(oauth2.get_current_user)) -> dict:
 
     checkPost(post_id, db)
-    votes = db.query(models.Vote).filter(
-        models.Vote.post_id == post_id).count()
+    votes = db.query(models.Vote)\
+        .filter(models.Vote.post_id == post_id)\
+        .count()
 
     has_voted = False
 
     voted = db.query(models.Vote).filter(
-        models.Vote.post_id == post_id, models.Vote.user_id == current_user.id).first()
+        models.Vote.post_id == post_id,
+        models.Vote.user_id == current_user.id).first()
     if voted:
         has_voted = True
 
