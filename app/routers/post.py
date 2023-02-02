@@ -1,6 +1,7 @@
 from fastapi import Response, status, HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
 from typing import Optional, List
+from sqlalchemy import func
 
 from .. import models, schemas, oauth2
 from ..database import get_db
@@ -45,23 +46,23 @@ def get_post(id: int,
 
 # GET ALL POSTS
 @router.get('/',
-            response_model=List[schemas.PostResponse])
+            response_model=List[schemas.PostVotes])
 async def get_posts(db: Session = Depends(get_db),
                     limit: int = 10,
                     skip: int = 0,
                     search: Optional[str] = ""):
-    posts = db.query(models.Post)   \
-        .filter(models.Post.title.contains(search.replace("%20", " ")))       \
-        .limit(limit)   \
-        .offset(skip)   \
+    posts = db.query(models.Post, func.count(models.Vote.post_id).label("votes"))   \
+        .join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True)     \
+        .group_by(models.Post.id)                                                   \
+        .filter(models.Post.title.contains(search.replace("%20", " ")))             \
+        .limit(limit)                                                               \
+        .offset(skip)                                                               \
         .all()
 
     return posts
 
 
 # UPDATE POST BY ID
-
-
 @router.patch('/{id}',
               response_model=schemas.PostResponse)
 async def create_post(id: int,

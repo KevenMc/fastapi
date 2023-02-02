@@ -38,7 +38,13 @@ class UserLogin(BaseModel):
     class Config:
         orm_mode = True
 
+#####################################################################
+# VOTE
 
+
+class Vote(BaseModel):
+    post_id: int
+    
 #####################################################################
 # POSTS
 class PostBase(BaseModel):
@@ -61,8 +67,9 @@ class PostResponse(PostBase):
         orm_mode = True
 
 
-#####################################################################
-#VOTE
+class PostVotes(BaseModel):
+    Post: PostResponse
+    votes: int
 
-class Vote(BaseModel):
-    post_id: int
+    class Config:
+        orm_mode = True

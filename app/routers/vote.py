@@ -9,7 +9,7 @@ router = APIRouter(prefix='/vote',
 
 
 def checkPost(post_id: int,
-              db: Session = Depends(get_db)):
+              db: Session = Depends(get_db)) -> None:
 
     post = db.query(models.Post).filter(
         models.Post.id == post_id).first()
@@ -22,7 +22,7 @@ def checkPost(post_id: int,
 @router.post('/', status_code=status.HTTP_201_CREATED)
 def vote(vote: schemas.Vote,
          db: Session = Depends(get_db),
-         current_user: int = Depends(oauth2.get_current_user)):
+         current_user: int = Depends(oauth2.get_current_user)) -> None:
     
     checkPost(vote.post_id, db)
     
@@ -41,11 +41,11 @@ def vote(vote: schemas.Vote,
 @router.get('/{post_id}')
 def vote(post_id: int,
          db: Session = Depends(get_db),
-         current_user: int = Depends(oauth2.get_current_user)):
+         current_user: int = Depends(oauth2.get_current_user)) -> dict:
 
     checkPost(post_id, db)
     votes = db.query(models.Vote).filter(
-        models.Vote.post_id == post_id).all()
+        models.Vote.post_id == post_id).count()
 
     has_voted = False
 
@@ -54,4 +54,4 @@ def vote(post_id: int,
     if voted:
         has_voted = True
 
-    return {"vote_count": len(votes), "voted": has_voted}
+    return {"vote_count": votes, "voted": has_voted}
