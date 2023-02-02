@@ -32,12 +32,16 @@ async def create_post(post: schemas.PostCreate,
 
 # READ POST BY ID
 @router.get('/{id}',
-            response_model=schemas.PostResponse)
+            response_model=schemas.PostVotes)
 def get_post(id: int,
              response: Response,
              db: Session = Depends(get_db),):
 
-    post = db.query(models.Post).filter(models.Post.id == id).first()
+    post = db.query(models.Post, func.count(models.Vote.post_id).label("votes"))    \
+        .join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True)     \
+        .group_by(models.Post.id)                                                   \
+        .filter(models.Post.id == id)                                               \
+        .first()
     if post == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="This post does not exist, perhaps it has been deleted")
