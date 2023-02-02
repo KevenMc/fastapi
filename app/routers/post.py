@@ -50,11 +50,16 @@ def get_post(id: int,
 async def get_posts(db: Session = Depends(get_db),
                     limit: int = 10,
                     skip: int = 0,
-                    search: Optional[str] = ""):
+                    search: Optional[str] = "",
+                    uid: Optional[int] = 0):
     posts = db.query(models.Post, func.count(models.Vote.post_id).label("votes"))   \
         .join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True)     \
         .group_by(models.Post.id)                                                   \
-        .filter(models.Post.title.contains(search.replace("%20", " ")))             \
+        .filter(*([models.Post.title.contains(search.replace("%20", " ")),
+                   (models.Post.user_id == uid)]
+                  if uid 
+                  else 
+                  [models.Post.title.contains(search.replace("%20", " "))]))        \
         .limit(limit)                                                               \
         .offset(skip)                                                               \
         .all()
